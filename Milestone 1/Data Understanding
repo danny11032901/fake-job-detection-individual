@@ -1,0 +1,17 @@
+
+##Data Understanding
+import pandas as pd
+
+df = pd.read_csv(r"D:\springboard intership 6.0\Classes\fake_job_postings.csv")
+
+print("Sample Data:")
+print(df.head())
+
+print("\nDataset Info:")
+print(df.info())
+
+print("\nMissing Values per Column:")
+print(df.isnull().sum())
+
+print("\nTarget (fraudulent) Distribution:")
+print(df['fraudulent'].value_counts())

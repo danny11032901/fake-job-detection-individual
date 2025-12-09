@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Fake Job Detector - Admin Login</title>
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+  :root {
+    --accent1: #7c3aed;   /* purple */
+    --accent2: #8b5cf6;   /* lighter purple */
+    --accent3: #14b8a6;   /* teal */
+  }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: white;
+    overflow-x: hidden;
+  }
+
+  /* Animated Blobs */
+  .blob {
+    position: fixed;
+    border-radius: 50%;
+    opacity: 0.35;
+    filter: blur(100px);
+    animation: float 25s infinite alternate ease-in-out, morph 40s infinite alternate ease-in-out;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .blob1 { 
+    width: 500px; 
+    height: 500px; 
+    background: linear-gradient(45deg, #a78bfa, #7c3aed); 
+    top: -150px; 
+    left: -150px; 
+    animation-delay: 0s; 
+  }
+  
+  .blob2 { 
+    width: 400px; 
+    height: 400px; 
+    background: linear-gradient(45deg, #60a5fa, #2563eb); 
+    top: 200px; 
+    left: 60%; 
+    animation-delay: 3s; 
+  }
+  
+  .blob3 { 
+    width: 550px; 
+    height: 550px; 
+    background: linear-gradient(45deg, #14b8a6, #0d9488); 
+    top: 60%; 
+    left: 40%; 
+    animation-delay: 6s; 
+  }
+
+  @keyframes float {
+    0% { transform: translate3d(0,0,0) scale(1); }
+    50% { transform: translate3d(50px,-30px,0) scale(1.1); }
+    100% { transform: translate3d(-30px,60px,0) scale(0.95); }
+  }
+
+  @keyframes morph {
+    0% { border-radius: 40% 60% 60% 40% / 55% 40% 60% 45%; }
+    50% { border-radius: 55% 45% 50% 50% / 45% 60% 40% 55%; }
+    100% { border-radius: 40% 60% 60% 40% / 55% 40% 60% 45%; }
+  }
+
+  /* Glass Effect */
+  .glass {
+    background: rgba(30, 41, 59, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 2rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  /* Modern Input Styles */
+  .modern-input {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(15, 23, 42, 0.4);
+    color: white;
+    font-size: 15px;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+
+  .modern-input:focus {
+    border-color: var(--accent1);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+  }
+
+  .modern-input::placeholder {
+    color: rgba(255,255,255,0.5);
+  }
+
+  /* Button Styles */
+  .gradient-btn {
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    color: white;
+    font-weight: 600;
+    padding: 14px 24px;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(124, 58, 237, 0.25);
+  }
+
+  .gradient-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 40px rgba(124, 58, 237, 0.35);
+  }
+
+  .ghost-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.9);
+    padding: 14px 24px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .ghost-btn:hover {
+    background: rgba(255,255,255,0.05);
+  }
+
+  /* Card Hover Effect */
+  .hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+</style>
+</head>
+<body class="relative min-h-screen">
+
+  <!-- Animated Blobs Background -->
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="blob blob3"></div>
+
+  <div class="min-h-screen flex items-center justify-center px-6 py-12">
+    <div class="glass p-10 lg:p-14 max-w-xl w-full z-10 hover-lift">
+      
+      <!-- Logo & Header -->
+      <div class="text-center mb-10">
+        <div class="w-24 h-24 mx-auto rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-5xl mb-6 shadow-xl">
+          <span class="font-bold">FJ</span>
+        </div>
+        <h1 class="text-3xl font-extrabold text-white mb-3">Admin Portal</h1>
+        <p class="text-gray-400 text-lg">Secure access — authorized personnel only</p>
+      </div>
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="mb-8 p-4 bg-gradient-to-r from-red-500/20 to-pink-500/20 border border-red-500/30 rounded-xl backdrop-blur-sm">
+            <p class="text-red-300 text-sm font-medium">{{ messages[0] }}</p>
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {% if error %}
+        <div class="mb-8 p-4 bg-gradient-to-r from-red-500/20 to-pink-500/20 border border-red-500/30 rounded-xl backdrop-blur-sm">
+          <p class="text-red-300 text-sm font-medium">{{ error }}</p>
+        </div>
+      {% endif %}
+
+      <!-- Login Form -->
+      <form method="POST" action="/admin_login" class="space-y-8">
+        <div class="space-y-2">
+          <label class="block text-gray-300 text-sm font-semibold mb-2">Username</label>
+          <input 
+            type="text" 
+            name="username" 
+            required 
+            class="modern-input"
+            placeholder="admin"
+            value=""
+          >
+        </div>
+        
+        <div class="space-y-2">
+          <label class="block text-gray-300 text-sm font-semibold mb-2">Password</label>
+          <input 
+            type="password" 
+            name="password" 
+            required 
+            class="modern-input"
+            placeholder="••••••••"
+          >
+        </div>
+
+        <div class="flex gap-4">
+          <button type="submit" class="gradient-btn flex-1">
+            Sign In
+          </button>
+          <button type="button" onclick="document.querySelectorAll('.modern-input').forEach(input => input.value = '')" class="ghost-btn">
+            Clear
+          </button>
+        </div>
+      </form>
+
+      <!-- Demo Credentials -->
+      <div class="mt-10 p-6 bg-gradient-to-r from-slate-800/50 to-slate-900/50 rounded-xl border border-white/10 backdrop-blur-sm">
+        <p class="text-gray-400 text-sm text-center mb-2">
+          Demo Credentials
+        </p>
+        <p class="font-mono text-gray-300 text-center text-lg">
+          admin / admin123
+        </p>
+      </div>
+
+      <!-- Navigation Links -->
+      <div class="mt-10 flex justify-between items-center text-sm">
+        <a href="/" class="text-gray-400 hover:text-white transition flex items-center gap-2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H19v-2z"/>
+          </svg>
+          Back to Home
+        </a>
+        
+        <a href="#" class="text-gray-400 hover:text-purple-400 transition" onclick="alert('Reset password functionality')">
+          Forgot Password?
+        </a>
+      </div>
+
+      <!-- Alternative Login Methods -->
+      <div class="mt-8 pt-8 border-t border-white/10">
+        <p class="text-gray-400 text-center text-sm mb-4">or sign in with</p>
+        <div class="flex gap-4">
+          <button class="flex-1 py-3 px-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition flex items-center justify-center gap-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+              <path d="M22 12c0-.68-.06-1.36-.18-2H12v3.8h5.2c-.22 1.12-.87 2.06-1.86 2.7v2.2h3c1.76-1.62 2.84-4 2.84-6.7z"/>
+            </svg>
+            Google
+          </button>
+          <button class="flex-1 py-3 px-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition flex items-center justify-center gap-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+              <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.86 8 9.8V15H8v-3h2V9.2c0-2 1.2-3.1 3-3.1.86 0 1.75.15 1.75.15V9h-1.08c-1.06 0-1.39.65-1.39 1.32V12h2.36l-.38 3H13v6.8c5-0.98 8-5 8-9.8z"/>
+            </svg>
+            Facebook
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Interactive blob movement with mouse
+    const blobs = document.querySelectorAll('.blob');
+    
+    document.addEventListener('mousemove', (e) => {
+      const x = e.clientX / window.innerWidth;
+      const y = e.clientY / window.innerHeight;
+      
+      blobs.forEach((blob, i) => {
+        const offset = (i + 1) * 20;
+        const moveX = (x * offset) - (offset / 2);
+        const moveY = (y * offset) - (offset / 2);
+        
+        blob.style.transform = `
+          translate3d(${moveX}px, ${moveY}px, 0)
+          rotate(${moveX * 0.1}deg)
+        `;
+      });
+    });
+
+    // Add ripple effect to buttons
+    document.querySelectorAll('button').forEach(button => {
+      button.addEventListener('click', function(e) {
+        const ripple = document.createElement('span');
+        const rect = this.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const x = e.clientX - rect.left - size / 2;
+        const y = e.clientY - rect.top - size / 2;
+        
+        ripple.style.cssText = `
+          position: absolute;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.3);
+          transform: scale(0);
+          animation: ripple 0.6s linear;
+          width: ${size}px;
+          height: ${size}px;
+          top: ${y}px;
+          left: ${x}px;
+        `;
+        
+        this.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 600);
+      });
+    });
+
+    // Add CSS for ripple animation
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes ripple {
+        to {
+          transform: scale(4);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+
+</body>
+</html>

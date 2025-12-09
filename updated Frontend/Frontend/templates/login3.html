@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Fake Job Detector - Admin Portal</title>
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root{
+    --glass: rgba(255,255,255,0.08);
+    --glass-strong: rgba(255,255,255,0.12);
+    --accent1: #ff5fa2;   /* pink */
+    --accent2: #7c3aed;   /* purple */
+    --accent3: #14b8a6;   /* teal */
+    --dark-bg: #0f0a1e;
+  }
+
+  html,body{
+    height:100%;
+    margin:0;
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, var(--dark-bg) 0%, #1a1035 100%);
+    color: white;
+    overflow-x: hidden;
+  }
+
+  /* Page background with gradient overlay */
+  .page-bg{
+    position:fixed; 
+    inset:0; 
+    z-index:-2;
+    background: 
+      radial-gradient(circle at 20% 80%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255, 95, 162, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(20, 184, 166, 0.08) 0%, transparent 50%),
+      linear-gradient(135deg, var(--dark-bg) 0%, #1a1035 100%);
+  }
+
+  /* Animated Gradient Blobs */
+  .blob{
+    position:absolute;
+    border-radius:50%;
+    filter:blur(100px);
+    opacity:0.6;
+    animation:float 20s infinite ease-in-out;
+    z-index:-1;
+    mix-blend-mode:screen;
+  }
+
+  .blob1{
+    width:500px;
+    height:500px;
+    background:linear-gradient(135deg, var(--accent1), var(--accent2));
+    top:-200px;
+    left:-200px;
+    animation-duration:25s;
+  }
+
+  .blob2{
+    width:600px;
+    height:600px;
+    background:linear-gradient(135deg, var(--accent3), var(--accent2));
+    bottom:-300px;
+    right:-200px;
+    animation-duration:30s;
+    animation-delay:2s;
+  }
+
+  .blob3{
+    width:400px;
+    height:400px;
+    background:linear-gradient(135deg, var(--accent1), var(--accent3));
+    top:50%;
+    left:70%;
+    animation-duration:20s;
+    animation-delay:1s;
+  }
+
+  @keyframes float{
+    0%,100%{
+      transform:translate(0,0) scale(1) rotate(0deg);
+    }
+    33%{
+      transform:translate(100px,-50px) scale(1.1) rotate(120deg);
+    }
+    66%{
+      transform:translate(-50px,80px) scale(0.9) rotate(240deg);
+    }
+  }
+
+  /* Art Panel (Left Side) */
+  .art-left{
+    position:absolute;
+    left:6%;
+    top:10%;
+    bottom:10%;
+    width:44%;
+    border-radius:28px;
+    overflow:hidden;
+    box-shadow: 0 30px 80px rgba(8,6,20,0.7);
+    transform: translateZ(0);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    background: linear-gradient(180deg, rgba(124,58,237,0.25), rgba(255,95,162,0.18));
+  }
+
+  .art-left::before{
+    content:"";
+    position:absolute; 
+    inset:0;
+    background: 
+      radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 0%, transparent 70%),
+      radial-gradient(circle at 70% 70%, rgba(255,255,255,0.05) 0%, transparent 70%);
+    mix-blend-mode:overlay;
+  }
+
+  .art-left .badge{
+    position:relative;
+    z-index:2;
+    color:white;
+    text-align:left;
+    width:78%;
+  }
+
+  .logo{
+    width:72px;
+    height:72px;
+    border-radius:14px;
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow: 0 10px 30px rgba(124,58,237,0.25);
+    font-weight:800;
+    color:white;
+    font-size:24px;
+  }
+
+  .art-title{
+    font-weight:800;
+    color:white;
+    font-size:34px;
+    margin-top:18px;
+    margin-bottom:6px;
+    letter-spacing:-0.5px;
+    text-shadow: 0 4px 18px rgba(0,0,0,0.5);
+  }
+
+  .art-sub{ 
+    color: rgba(255,255,255,0.9); 
+    opacity:0.9; 
+    margin-bottom:18px; 
+    font-size:15px; 
+    line-height:1.5;
+  }
+
+  /* Art Card */
+  .art-card {
+    position:relative; 
+    z-index:2; 
+    width:78%; 
+    margin-top: 18px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    padding:18px;
+    border-radius:16px;
+    backdrop-filter: blur(6px);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  /* Login Card (Center-right) */
+  .login-card{
+    position:relative;
+    width:420px;
+    max-width:92%;
+    min-height:420px;
+    border-radius:22px;
+    padding:32px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+    border: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(15px);
+    box-shadow: 
+      0 35px 80px rgba(3,6,18,0.65),
+      inset 0 1px 0 rgba(255,255,255,0.1);
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    transition: transform 0.3s ease;
+  }
+
+  .login-card:hover{
+    transform: translateY(-5px);
+  }
+
+  .login-card::before{
+    content:'';
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    height:1px;
+    background:linear-gradient(90deg, transparent, var(--accent1), var(--accent2), transparent);
+  }
+
+  .brandline{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:24px;
+  }
+
+  .brandline .mark{
+    width:46px;
+    height:46px;
+    border-radius:10px;
+    background:linear-gradient(135deg, var(--accent1), var(--accent2));
+    display:inline-grid;
+    place-items:center;
+    color:white;
+    font-weight:800;
+    font-size:18px;
+    box-shadow: 0 10px 30px rgba(124,58,237,0.16);
+  }
+
+  h1.login-title{ 
+    font-size:24px; 
+    margin:8px 0 4px; 
+    color:white; 
+    font-weight:800; 
+    letter-spacing:-0.2px;
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  p.login-desc{ 
+    color:rgba(255,255,255,0.8); 
+    font-size:13px; 
+    margin:0 0 20px; 
+  }
+
+  /* Enhanced Input Styles */
+  .input-group{
+    position:relative;
+    margin-bottom:20px;
+  }
+
+  input[type="text"], input[type="password"]{
+    width:100%; 
+    padding:14px 16px;
+    padding-left:48px;
+    border-radius:12px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    color:white; 
+    font-size:14px; 
+    outline:none;
+    transition: all 0.3s ease;
+  }
+
+  input:focus{ 
+    border-color: var(--accent1);
+    box-shadow: 0 6px 30px rgba(124,58,237,0.12); 
+    background: linear-gradient(180deg, rgba(124,58,237,0.05), rgba(124,58,237,0.02));
+  }
+
+  input::placeholder{ 
+    color: rgba(255,255,255,0.5); 
+  }
+
+  .input-icon{
+    position:absolute;
+    left:16px;
+    top:50%;
+    transform:translateY(-50%);
+    color: rgba(255,255,255,0.5);
+    transition: color 0.3s ease;
+  }
+
+  input:focus + .input-icon{
+    color: var(--accent1);
+  }
+
+  .control-row{ 
+    display:flex; 
+    gap:10px; 
+    align-items:center; 
+    margin-top:20px; 
+  }
+
+  .btn-primary{
+    flex:1; 
+    padding:14px 16px; 
+    border-radius:999px; 
+    border:none; 
+    cursor:pointer;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    font-weight:700; 
+    color:white; 
+    box-shadow: 0 12px 30px rgba(124,58,237,0.2);
+    transition: transform .2s ease, box-shadow .2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary:hover{ 
+    transform: translateY(-3px) scale(1.02); 
+    box-shadow: 0 20px 40px rgba(124,58,237,0.26); 
+  }
+
+  .btn-primary:active{
+    transform: translateY(-1px);
+  }
+
+  .btn-primary::after{
+    content:'';
+    position:absolute;
+    top:0;
+    left:-100%;
+    width:100%;
+    height:100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .btn-primary:hover::after{
+    left:100%;
+  }
+
+  .ghost {
+    padding:12px 16px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,0.1); 
+    color:rgba(255,255,255,0.9);
+    background:transparent; 
+    cursor:pointer; 
+    font-weight:600;
+    transition: all 0.3s ease;
+  }
+
+  .ghost:hover{
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.2);
+  }
+
+  .socials{ 
+    display:flex; 
+    gap:10px; 
+    margin-top:16px; 
+  }
+
+  .social{
+    flex:1; 
+    padding:12px; 
+    border-radius:12px; 
+    border:1px solid rgba(255,255,255,0.08);
+    display:flex;
+    align-items:center;
+    gap:10px; 
+    justify-content:center; 
+    font-weight:700; 
+    cursor:pointer;
+    background: linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    transition: all 0.3s ease;
+  }
+
+  .social:hover{
+    background: rgba(255,255,255,0.08);
+    transform: translateY(-2px);
+  }
+
+  .muted{ 
+    color:rgba(255,255,255,0.55); 
+    font-size:13px; 
+    text-align:center; 
+    margin-top:12px; 
+  }
+
+  /* Demo Credentials Card */
+  .demo-card{
+    margin-top:20px;
+    padding:16px;
+    background: linear-gradient(135deg, rgba(124,58,237,0.1), rgba(255,95,162,0.05));
+    border: 1px solid rgba(124,58,237,0.2);
+    border-radius:12px;
+    text-align:center;
+    animation: pulse 2s ease-in-out infinite;
+    cursor:pointer;
+    transition: all 0.3s ease;
+  }
+
+  .demo-card:hover{
+    background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(255,95,162,0.1));
+    transform: scale(1.02);
+  }
+
+  @keyframes pulse{
+    0%, 100%{ 
+      box-shadow: 0 0 20px rgba(124,58,237,0.3);
+    }
+    50%{ 
+      box-shadow: 0 0 30px rgba(124,58,237,0.5);
+    }
+  }
+
+  /* Floating animation for login card */
+  @keyframes float-simple{
+    0%, 100%{ transform: translateY(0) rotate(0deg); }
+    50%{ transform: translateY(-10px) rotate(1deg); }
+  }
+
+  .float-element{
+    animation: float-simple 6s ease-in-out infinite;
+  }
+
+  /* Responsive Design */
+  @media (max-width:1024px){
+    .art-left{ 
+      left:4%; 
+      width:46%; 
+      top:7%; 
+      bottom:7%; 
+      border-radius:20px; 
+    }
+  }
+
+  @media (max-width:860px){
+    .art-left{ 
+      display:none; 
+    }
+    .login-card{ 
+      width:92%; 
+      margin: 0 auto;
+    }
+  }
+
+  /* Error/Success Messages */
+  .alert-message{
+    padding:12px 16px;
+    border-radius:12px;
+    margin-bottom:20px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    animation: slideIn 0.3s ease;
+  }
+
+  .alert-error{
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.1));
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fecaca;
+  }
+
+  @keyframes slideIn{
+    from{
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to{
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-bg"></div>
+
+<!-- Animated Blobs -->
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+<div class="blob blob3"></div>
+
+<!-- LEFT Art Panel -->
+<div class="art-left float-element">
+  <div class="badge">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="logo">🔍</div>
+      <div style="color:rgba(255,255,255,0.95);font-weight:700;font-size:16px">Fake Job Detector</div>
+    </div>
+
+    <div style="margin-top:16px;">
+      <div class="art-title">Welcome to Admin Portal</div>
+      <div class="art-sub">Fast. Accurate. Secure — manage, verify & moderate job listings with precision and clarity.</div>
+
+      <div class="art-card" role="note">
+        <div style="width:56px; height:56px; border-radius:10px; background: linear-gradient(135deg, var(--accent1), var(--accent2)); display: flex; align-items: center; justify-content: center; box-shadow:0 8px 30px rgba(0,0,0,0.45);">
+          <svg width="24" height="24" fill="white" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+          </svg>
+        </div>
+        <div style="flex:1;padding-left:12px;color:rgba(255,255,255,0.95);">
+          <div style="font-weight:800;">Secure Access</div>
+          <div style="font-size:13px; opacity:0.85;">SSL encrypted • Two-factor ready • Audit logs</div>
+        </div>
+      </div>
+
+      <div class="dots" style="margin-top:14px;">
+        <div class="dot" style="width:8px;height:8px;border-radius:99px;background: linear-gradient(90deg, var(--accent1), var(--accent2)); box-shadow:0 6px 18px rgba(124,58,237,0.18); transform:scale(1.2);"></div>
+        <div class="dot" style="width:8px;height:8px;border-radius:99px;background:rgba(255,255,255,0.22);"></div>
+        <div class="dot" style="width:8px;height:8px;border-radius:99px;background:rgba(255,255,255,0.22);"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CENTER-RIGHT Login Card -->
+<div class="min-h-screen flex items-center justify-center" style="position:relative; z-index:5;">
+  <div class="login-card float-element">
+    <div>
+      <div class="brandline">
+        <div class="mark">FJ</div>
+        <div>
+          <div style="color:rgba(255,255,255,0.9); font-weight:800;">Admin Portal</div>
+          <div style="color:rgba(255,255,255,0.55); font-size:12px;">Secure access — authorized personnel only</div>
+        </div>
+      </div>
+
+      <h1 class="login-title">Sign in to Dashboard</h1>
+      <p class="login-desc">Enter your credentials to access the admin panel</p>
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="alert-message alert-error">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+            </svg>
+            {{ messages[0] }}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {% if error %}
+        <div class="alert-message alert-error">
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+          </svg>
+          {{ error }}
+        </div>
+      {% endif %}
+
+      <!-- Login Form -->
+      <form method="POST" action="/admin_login">
+        <div class="input-group">
+          <input name="username" type="text" placeholder="admin" required />
+          <div class="input-icon">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <input name="password" type="password" placeholder="••••••••" required />
+          <div class="input-icon">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="control-row">
+          <button class="btn-primary" type="submit">Sign in</button>
+          <button class="ghost" type="button" id="clearBtn">Clear</button>
+        </div>
+      </form>
+
+      <!-- Demo Credentials -->
+      <div class="demo-card" id="demoCredentials">
+        <div style="color:rgba(255,255,255,0.8); font-size:12px; margin-bottom:4px;">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20" style="display:inline-block; margin-right:6px;">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/>
+          </svg>
+          Click to auto-fill demo credentials
+        </div>
+        <div style="font-family: 'SF Mono', Monaco, monospace; font-size:13px; color:#fff;">
+          <span style="color:var(--accent1);">admin</span> / 
+          <span style="color:var(--accent3);">admin123</span>
+        </div>
+      </div>
+
+      <div class="muted">or sign in with</div>
+
+      <div class="socials">
+        <div class="social" onclick="showAlert('Google login will be implemented')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M22 12c0-.68-.06-1.36-.18-2H12v3.8h5.2c-.22 1.12-.87 2.06-1.86 2.7v2.2h3c1.76-1.62 2.84-4 2.84-6.7z"/>
+          </svg>
+          Google
+        </div>
+        <div class="social" onclick="showAlert('GitHub login will be implemented')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+          </svg>
+          GitHub
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <a href="/" style="font-size:13px;color:rgba(255,255,255,0.6); text-decoration:none; display:flex; align-items:center; gap:6px; transition: color 0.3s ease;" 
+           onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M19 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H19v-2z"/>
+          </svg>
+          Back to Home
+        </a>
+        <a href="#" style="font-size:13px;color:var(--accent1);font-weight:600;text-decoration:none; transition: opacity 0.3s ease;" 
+           onclick="showAlert('Password reset feature will be implemented')" 
+           onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+          Forgot Password?
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Interactive blob movement
+  document.addEventListener('mousemove', (e) => {
+    const x = (e.clientX / window.innerWidth) * 100;
+    const y = (e.clientY / window.innerHeight) * 100;
+    
+    document.querySelectorAll('.blob').forEach((blob, index) => {
+      const intensity = (index + 1) * 0.2;
+      blob.style.transform = `
+        translate(${(x - 50) * intensity}px, ${(y - 50) * intensity}px)
+        scale(${1 + intensity * 0.2})
+      `;
+    });
+  });
+
+  // Clear button functionality
+  document.getElementById('clearBtn').addEventListener('click', function() {
+    document.querySelectorAll('input[type="text"], input[type="password"]').forEach(input => {
+      input.value = '';
+      input.focus();
+    });
+    
+    // Add visual feedback
+    this.innerHTML = 'Cleared!';
+    this.style.background = 'rgba(255,255,255,0.1)';
+    setTimeout(() => {
+      this.innerHTML = 'Clear';
+      this.style.background = '';
+    }, 1000);
+  });
+
+  // Demo credentials auto-fill
+  document.getElementById('demoCredentials').addEventListener('click', function() {
+    document.querySelector('input[name="username"]').value = 'admin';
+    document.querySelector('input[name="password"]').value = 'admin123';
+    
+    // Visual feedback
+    const originalHTML = this.innerHTML;
+    this.innerHTML = `
+      <div style="color:var(--accent3); font-size:12px; margin-bottom:4px;">
+        <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20" style="display:inline-block; margin-right:6px;">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+        </svg>
+        Credentials filled!
+      </div>
+      <div style="font-family: 'SF Mono', Monaco, monospace; font-size:13px; color:#fff;">
+        <span style="color:var(--accent1);">admin</span> / 
+        <span style="color:var(--accent3);">admin123</span>
+      </div>
+    `;
+    
+    setTimeout(() => {
+      this.innerHTML = originalHTML;
+    }, 2000);
+  });
+
+  // Input focus effects
+  document.querySelectorAll('input').forEach(input => {
+    input.addEventListener('focus', function() {
+      this.parentElement.style.transform = 'scale(1.02)';
+    });
+    
+    input.addEventListener('blur', function() {
+      this.parentElement.style.transform = 'scale(1)';
+    });
+  });
+
+  // Form submission animation
+  const form = document.querySelector('form');
+  form.addEventListener('submit', function(e) {
+    const submitBtn = this.querySelector('.btn-primary');
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.innerHTML = `
+      <svg class="animate-spin" width="18" height="18" fill="none" viewBox="0 0 24 24" style="margin-right:8px;">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      Signing in...
+    `;
+    submitBtn.disabled = true;
+    
+    // If form is valid, allow submission
+    if (this.checkValidity()) {
+      return true;
+    }
+    
+    // Otherwise, reset button after 1.5s
+    setTimeout(() => {
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+    }, 1500);
+    
+    return false;
+  });
+
+  // Alert function
+  function showAlert(message) {
+    alert(message);
+  }
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    // Ctrl + D for demo credentials
+    if (e.ctrlKey && e.key === 'd') {
+      e.preventDefault();
+      document.getElementById('demoCredentials').click();
+    }
+    
+    // Escape to clear
+    if (e.key === 'Escape') {
+      document.getElementById('clearBtn').click();
+    }
+    
+    // Ctrl + Enter to submit
+    if (e.ctrlKey && e.key === 'Enter') {
+      document.querySelector('form').submit();
+    }
+  });
+
+  // Add subtle hover effects to social buttons
+  document.querySelectorAll('.social').forEach(btn => {
+    btn.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-2px)';
+    });
+    
+    btn.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(0)';
+    });
+  });
+
+  // Initialize floating animation
+  const loginCard = document.querySelector('.login-card');
+  let floatValue = 0;
+  
+  function updateFloat() {
+    floatValue += 0.01;
+    const offset = Math.sin(floatValue) * 5;
+    loginCard.style.transform = `translateY(${offset}px)`;
+    requestAnimationFrame(updateFloat);
+  }
+  
+  // Start animation
+  updateFloat();
+</script>
+
+</body>
+</html

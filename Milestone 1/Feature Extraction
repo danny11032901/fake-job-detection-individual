@@ -1,0 +1,43 @@
+##Feature Extraction
+import pandas as pd
+import re
+import string
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from bs4 import BeautifulSoup
+import nltk
+
+nltk.download('punkt')
+nltk.download('punkt_tab')
+nltk.download('stopwords')
+
+df = pd.read_csv("D:/springboard intership 6.0/Classes/fake_job_postings.csv")
+
+def clean_text(text):
+    text = str(text)
+    text = BeautifulSoup(text, "html.parser").get_text()
+    text = re.sub(r'\d+', '', text)
+    text = text.lower()
+    text = text.translate(str.maketrans('', '', string.punctuation))
+    words = word_tokenize(text)
+    words = [w for w in words if w not in stopwords.words('english')]
+    return ' '.join(words)
+
+df['clean_company_profile'] = df['company_profile'].apply(clean_text)
+
+df['job_desc_word_count_before'] = df['description'].apply(lambda x: len(str(x).split()))
+df['clean_description'] = df['description'].apply(clean_text)
+df['job_desc_word_count_after'] = df['clean_description'].apply(lambda x: len(str(x).split()))
+
+avg_before = df['job_desc_word_count_before'].mean()
+avg_after = df['job_desc_word_count_after'].mean()
+
+print("Average words before cleaning:", avg_before)
+print("Average words after cleaning:", avg_after)
+
+if avg_after < avg_before * 0.5:
+    print("The cleaning removed quite a lot of text.")
+elif avg_after < avg_before:
+    print("The cleaning removed just enough noise.")
+else:
+    print("The cleaning did not remove much noise.")

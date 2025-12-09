@@ -1,0 +1,50 @@
+##Text Cleaning & Preprocessing
+import re
+import string
+import pandas as pd
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+
+# Download NLTK data files (run once)
+nltk.download('stopwords')
+nltk.download('wordnet')
+
+# Load the dataset
+data  = pd.read_csv(r"D:\springboard intership 6.0\Classes\fake_job_postings.csv")
+
+
+# Text preprocessing function
+def preprocess_text(text):
+    if pd.isna(text):
+        return ""
+
+    # convert to lowercase
+    text = text.lower()
+
+    # remove HTML tags
+    text = re.sub(r"<.*?>", "", text)
+
+    # remove URLs
+    text = re.sub(r"http\S+|www\S+", "", text)
+
+    # remove punctuation and digits
+    text = re.sub(r"[%s\d]" % re.escape(string.punctuation), "", text)
+
+    # remove extra spaces
+    text = re.sub(r"\s+", " ", text).strip()
+
+    # remove stopwords and apply lemmatization
+    stop_words = set(stopwords.words("english"))
+    lemma = WordNetLemmatizer()
+    words = [lemma.lemmatize(w) for w in text.split() if w not in stop_words]
+    return " ".join(words)
+# Apply cleaning to the description column
+data["clean_description"] = data["description"].apply(preprocess_text)
+# Compare original and cleaned text
+print("Original Text:\n", data["description"].iloc[1][:300])
+print("\nCleaned Text:\n", data["clean_description"].iloc[1][:300])
+
+# Display a small sample
+print("\nSample of Cleaned Data:")
+print(data[["description", "clean_description"]].head(3))

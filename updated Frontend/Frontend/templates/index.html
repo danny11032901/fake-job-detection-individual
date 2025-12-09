@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fake Job Detector</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: #0b0f19;
+      font-family: "Inter", sans-serif;
+      color: #e5e9f5;
+    }
+
+    /* Smooth fade-in */
+    .fade {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeIn .9s ease forwards;
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Subtle moving gradient background blob */
+    .blob {
+      position: fixed;
+      top: 20%;
+      left: 60%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(124,58,237,0.4), rgba(0,0,0,0));
+      filter: blur(140px);
+      animation: moveBlob 18s infinite alternate ease-in-out;
+      pointer-events: none;
+    }
+    @keyframes moveBlob {
+      0% { transform: translate(0,0) scale(1); }
+      100% { transform: translate(-120px,60px) scale(1.3); }
+    }
+
+    /* Glass panel style */
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(14px);
+      border-radius: 20px;
+      transition: .3s;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255,255,255,0.18);
+    }
+
+    /* Beautiful glowing button */
+    .primary-btn {
+      background: linear-gradient(90deg, #6d28d9, #9b5cff);
+      color: white;
+      padding: 14px 32px;
+      border-radius: 14px;
+      font-size: 18px;
+      font-weight: 600;
+      transition: .25s;
+    }
+    .primary-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 18px rgba(135,85,255,0.4);
+    }
+
+    /* Input styling */
+    textarea {
+      height: 240px;
+      resize: none;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<div class="blob"></div>
+
+<!-- NAV -->
+<nav class="w-full py-5 px-8 flex justify-between items-center fixed top-0 left-0 bg-black/30 backdrop-blur-xl border-b border-white/10 z-50">
+  <h1 class="text-xl font-bold">🕵️ Fake Job Detector</h1>
+
+  <div class="flex gap-6 text-gray-300">
+    <a href="/" class="hover:text-white">Home</a>
+    <a href="/history" class="hover:text-white">History</a>
+    <a href="/admin_login" class="primary-btn text-sm py-2 px-4">Admin</a>
+  </div>
+</nav>
+
+
+<!-- HERO -->
+<section class="pt-32 fade text-center max-w-3xl mx-auto px-6">
+  <h2 class="text-5xl font-bold leading-tight">
+    Detect Fake Jobs in Seconds.
+  </h2>
+  <p class="text-gray-400 text-lg mt-4">
+    Paste any job description and let AI determine if it's real or a scam.
+  </p>
+
+  <button id="startBtn" class="primary-btn mt-8">Start Analysis</button>
+</section>
+
+
+
+<!-- FORM SECTION -->
+<section id="formSection" class="hidden fade mt-16 max-w-4xl mx-auto px-6">
+  <div class="card p-10">
+
+    <h3 class="text-2xl font-semibold mb-4">Paste Job Description</h3>
+
+    <form action="/predict" method="POST" class="grid gap-5">
+      <textarea class="w-full p-5 bg-black/20 border border-white/10 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-gray-200"
+      placeholder="Paste the job posting text here..." name="job_description" required></textarea>
+
+      <div class="flex gap-4 justify-between flex-wrap">
+        <button type="button" class="border px-5 py-3 rounded-lg hover:bg-white/10 transition">🎤 Voice Input</button>
+        <button type="button" class="border px-5 py-3 rounded-lg hover:bg-white/10 transition">📄 Load Sample</button>
+        <button type="button" class="border px-5 py-3 rounded-lg hover:bg-white/10 transition">🧹 Clear</button>
+
+        <button type="submit" class="primary-btn px-10">Analyze</button>
+      </div>
+    </form>
+
+  </div>
+</section>
+
+
+
+
+<!-- STATS -->
+<section class="mt-28 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto px-6 fade">
+  <div class="card p-7 text-center">
+    <span class="text-4xl font-bold" data-count="12000">0</span>
+    <p class="text-gray-400 text-sm mt-2">Total Analyses</p>
+  </div>
+
+  <div class="card p-7 text-center">
+    <span class="text-4xl font-bold" data-count="8500">0</span>
+    <p class="text-gray-400 text-sm mt-2">Fake Jobs Detected</p>
+  </div>
+
+  <div class="card p-7 text-center">
+    <span class="text-4xl font-bold" data-count="3000">0</span>
+    <p class="text-gray-400 text-sm mt-2">Users Protected</p>
+  </div>
+
+  <div class="card p-7 text-center">
+    <span class="text-4xl font-bold" data-count="97">0%</span>
+    <p class="text-gray-400 text-sm mt-2">Accuracy</p>
+  </div>
+</section>
+
+
+
+<script>
+  // Show form
+  document.getElementById("startBtn").addEventListener("click", () => {
+    document.getElementById("formSection").classList.remove("hidden");
+    document.getElementById("formSection").scrollIntoView({behavior: "smooth"});
+  });
+
+  // Counter animation
+  document.querySelectorAll("[data-count]").forEach(counter => {
+    const target = +counter.dataset.count;
+    let value = 0;
+
+    const update = () => {
+      value += Math.ceil(target / 90);
+      counter.textContent = value >= target ? target : value;
+      if (value < target) requestAnimationFrame(update);
+    };
+    update();
+  });
+</script>
+
+</body>
+</html>

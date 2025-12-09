@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en" class="h-full bg-slate-900">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Fake Job Detector - Admin Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: white;
+      overflow-x: hidden;
+    }
+
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      opacity: 0.35;
+      filter: blur(100px);
+      animation: float 25s infinite alternate ease-in-out, morph 40s infinite alternate ease-in-out;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .blob1 { width: 500px; height: 500px; background: linear-gradient(45deg, #a78bfa, #7c3aed); top: -150px; left: -150px; animation-delay: 0s; }
+    .blob2 { width: 400px; height: 400px; background: linear-gradient(45deg, #60a5fa, #2563eb); top: 200px; left: 60%; animation-delay: 3s; }
+    .blob3 { width: 550px; height: 550px; background: linear-gradient(45deg, #14b8a6, #0d9488); top: 60%; left: 40%; animation-delay: 6s; }
+
+    @keyframes float {
+      0% { transform: translate3d(0,0,0) scale(1); }
+      50% { transform: translate3d(50px,-30px,0) scale(1.1); }
+      100% { transform: translate3d(-30px,60px,0) scale(0.95); }
+    }
+
+    @keyframes morph {
+      0% { border-radius: 40% 60% 60% 40% / 55% 40% 60% 45%; }
+      50% { border-radius: 55% 45% 50% 50% / 45% 60% 40% 55%; }
+      100% { border-radius: 40% 60% 60% 40% / 55% 40% 60% 45%; }
+    }
+
+    .glass {
+      background: rgba(30, 41, 59, 0.6);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 2rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+  </style>
+</head>
+<body class="h-full relative">
+
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="blob blob3"></div>
+
+  <div class="min-h-full flex items-center justify-center px-6 py-12">
+    <div class="glass p-8 lg:p-12 max-w-md w-full z-10">
+      
+      <!-- Logo -->
+      <div class="text-center mb-8">
+        <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-4xl mb-4">🕵️</div>
+        <h1 class="text-3xl font-extrabold text-white">Admin Login</h1>
+        <p class="text-gray-400 mt-2">Access the admin dashboard</p>
+      </div>
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl">
+            <p class="text-red-300 text-sm">{{ messages[0] }}</p>
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <!-- Login Form -->
+      <form method="POST" action="/admin_login" class="space-y-6">
+        <div>
+          <label class="block text-gray-300 text-sm font-semibold mb-2">Username</label>
+          <input 
+            type="text" 
+            name="username" 
+            required 
+            class="w-full rounded-xl border border-white/20 bg-black/50 px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/70 transition"
+            placeholder="Enter admin username"
+          >
+        </div>
+        
+        <div>
+          <label class="block text-gray-300 text-sm font-semibold mb-2">Password</label>
+          <input 
+            type="password" 
+            name="password" 
+            required 
+            class="w-full rounded-xl border border-white/20 bg-black/50 px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/70 transition"
+            placeholder="Enter password"
+          >
+        </div>
+
+        <button 
+          type="submit" 
+          class="w-full rounded-xl px-6 py-3 text-white font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 hover:scale-105 active:scale-95 transition shadow-lg"
+        >
+          Sign In
+        </button>
+      </form>
+
+      <!-- Back Link -->
+      <div class="mt-8 text-center">
+        <a href="/" class="text-gray-400 hover:text-white transition text-sm">
+          ← Back to Home
+        </a>
+      </div>
+
+      <!-- Demo Credentials -->
+      <div class="mt-8 p-4 bg-slate-800/50 rounded-xl border border-white/10">
+        <p class="text-gray-400 text-sm text-center">
+          Demo Credentials:<br>
+          <span class="font-mono text-gray-300">admin / admin123</span>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Blobs follow mouse
+    const blobs = document.querySelectorAll('.blob');
+    document.addEventListener('mousemove', e => {
+      const x = e.clientX / window.innerWidth;
+      const y = e.clientY / window.innerHeight;
+      blobs.forEach((blob, i) => {
+        const offset = (i + 1) * 10;
+        blob.style.transform = `translate(${x*offset - offset/2}px, ${y*offset - offset/2}px)`;
+      });
+    });
+  </script>
+
+</body>
+</html>
