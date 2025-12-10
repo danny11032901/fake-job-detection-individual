@@ -19,7 +19,6 @@
     overflow-x: hidden;
   }
 
-  /* Animated floating blobs */
   .blob {
     position: fixed;
     border-radius: 50%;
@@ -29,7 +28,7 @@
     z-index: 0;
     pointer-events: none;
   }
-  
+
   .blob1 { width: 450px; height: 450px; background: linear-gradient(45deg,#a78bfa,#7c3aed); top: -120px; left: -120px; animation-delay: 0s; }
   .blob2 { width: 350px; height: 350px; background: linear-gradient(45deg,#60a5fa,#2563eb); top: 200px; right: 5%; animation-delay: 4s; }
   .blob3 { width: 500px; height: 500px; background: linear-gradient(45deg,#14b8a6,#0d9488); bottom: 10%; left: 30%; animation-delay: 8s; }
@@ -39,14 +38,13 @@
     50% { transform: translate3d(50px,-30px,0) scale(1.05); }
     100% { transform: translate3d(-30px,60px,0) scale(0.95); }
   }
-  
+
   @keyframes morph {
     0% { border-radius: 40% 60% 60% 40% / 55% 40% 60% 45%; }
     50% { border-radius: 55% 45% 50% 50% / 45% 60% 40% 55%; }
     100% { border-radius: 40% 60% 60% 40% / 55% 40% 60% 45%; }
   }
 
-  /* Glassmorphism card */
   .result-card {
     position: relative;
     z-index: 10;
@@ -67,128 +65,35 @@
     100% { opacity: 1; transform: translateY(0); }
   }
 
-  h2 {
-    font-size: 2rem;
-    font-weight: 800;
-    margin-bottom: 1rem;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-  }
+  h2 { font-size: 2rem; font-weight: 800; margin-bottom: 1rem; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+  .description-box { background: rgba(255,255,255,0.1); padding: 1rem 1.25rem; border-radius: 1rem; margin: 1rem 0 1.5rem; font-size: 1rem; line-height: 1.6; text-align: left; max-height: 200px; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; scroll-behavior: smooth; }
 
-  .description-box {
-    background: rgba(255,255,255,0.1);
-    padding: 1rem 1.25rem;
-    border-radius: 1rem;
-    margin: 1rem 0 1.5rem;
-    font-size: 1rem;
-    line-height: 1.6;
-    text-align: left;
-    max-height: 200px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    scroll-behavior: smooth;
-  }
+  .result-label { font-weight: 700; font-size: 1.5rem; background: linear-gradient(90deg,#7c3aed,#14b8a6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .fake-label { background: linear-gradient(90deg,#ef4444,#f87171); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .real-label { background: linear-gradient(90deg,#10b981,#34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-  .result-label {
-    font-weight: 700;
-    font-size: 1.5rem;
-    background: linear-gradient(90deg,#7c3aed,#14b8a6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .fake-label {
-    background: linear-gradient(90deg,#ef4444,#f59e0b);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .real-label {
-    background: linear-gradient(90deg,#10b981,#3b82f6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .confidence-value {
-    font-weight: 600;
-    font-size: 1.2rem;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
-  }
-
+  .confidence-value { font-weight: 600; font-size: 1.2rem; text-shadow: 0 1px 4px rgba(0,0,0,0.5); }
   .high-confidence { color: #10b981; }
   .medium-confidence { color: #f59e0b; }
   .low-confidence { color: #ef4444; }
 
-  .btn {
-    display: inline-block;
-    margin: 0.5rem;
-    padding: 0.75rem 1.75rem;
-    border-radius: 9999px;
-    background: #4f46e5;
-    color: white;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-  }
+  .btn { display: inline-block; margin: 0.5rem; padding: 0.75rem 1.75rem; border-radius: 9999px; background: #4f46e5; color: white; font-weight: 600; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
+  .btn:hover { transform: translateY(-2px) scale(1.05); background: #6366f1; box-shadow: 0 8px 25px rgba(0,0,0,0.35); }
 
-  .btn:hover {
-    transform: translateY(-2px) scale(1.05);
-    background: #6366f1;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.35);
-  }
+  .confidence-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; margin: 1rem 0; overflow: hidden; }
+  .confidence-fill { height: 100%; border-radius: 4px; transition: width 1s ease-in-out; }
 
-  .confidence-bar {
-    width: 100%;
-    height: 8px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 4px;
-    margin: 1rem 0;
-    overflow: hidden;
-  }
+  .info-box { background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 1rem; margin: 1rem 0; font-size: 0.9rem; text-align: left; }
 
-  .confidence-fill {
-    height: 100%;
-    border-radius: 4px;
-    transition: width 1s ease-in-out;
-  }
+  .description-box::-webkit-scrollbar { width: 8px; }
+  .description-box::-webkit-scrollbar-thumb { background: #818cf8; border-radius: 4px; }
+  .description-box::-webkit-scrollbar-track { background: transparent; }
 
-  .info-box {
-    background: rgba(255,255,255,0.05);
-    padding: 1rem;
-    border-radius: 1rem;
-    margin: 1rem 0;
-    font-size: 0.9rem;
-    text-align: left;
-  }
-
-  /* Scrollbar style for description box */
-  .description-box::-webkit-scrollbar {
-    width: 8px;
-  }
-  
-  .description-box::-webkit-scrollbar-thumb {
-    background: #818cf8;
-    border-radius: 4px;
-  }
-  
-  .description-box::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  @media(max-width:640px){
-    .result-card {
-      padding: 2rem 1rem;
-    }
-    
-    h2 { font-size: 1.75rem; }
-    .result-label { font-size: 1.25rem; }
-  }
+  @media(max-width:640px){ .result-card { padding: 2rem 1rem; } h2 { font-size: 1.75rem; } .result-label { font-size: 1.25rem; } }
 </style>
 </head>
 <body>
 
-<!-- Floating Blobs -->
 <div class="blob blob1"></div>
 <div class="blob blob2"></div>
 <div class="blob blob3"></div>
@@ -198,8 +103,8 @@
 
     <p><strong>Job Description:</strong></p>
     <div class="description-box">
-        {% if description %}
-            {{ description }}
+        {% if job_description %}
+            {{ job_description }}
         {% else %}
             No description provided.
         {% endif %}
@@ -207,22 +112,21 @@
 
     <h3>
         Result: 
-        <span class="result-label {% if 'Fake' in label %}fake-label{% elif 'Real' in label %}real-label{% endif %}">
-            {% if label %}
-                {{ label }}
+        <span class="result-label {% if verdict == 'Fake Job' %}fake-label{% elif verdict == 'Real Job' %}real-label{% endif %}">
+            {% if verdict %}
+                {{ verdict }}
             {% else %}
                 Unable to determine
             {% endif %}
         </span>
     </h3>
 
-    <!-- Confidence Bar -->
     <div class="confidence-bar">
         <div class="confidence-fill" 
              style="width: {% if confidence %}{{ confidence }}%{% else %}0%{% endif %};
-                    background: {% if confidence >= 70 %}linear-gradient(90deg, #10b981, #34d399)
-                              {% elif confidence >= 40 %}linear-gradient(90deg, #f59e0b, #fbbf24)
-                              {% else %}linear-gradient(90deg, #ef4444, #f87171){% endif %};">
+                    background: {% if confidence >= 70 %}linear-gradient(90deg,#10b981,#34d399)
+                              {% elif confidence >= 40 %}linear-gradient(90deg,#f59e0b,#fbbf24)
+                              {% else %}linear-gradient(90deg,#ef4444,#f87171){% endif %};">
         </div>
     </div>
 
@@ -240,15 +144,14 @@
         </strong>
     </p>
 
-    <!-- Additional Information -->
     <div class="info-box">
         <strong> Interpretation:</strong><br>
         {% if confidence >= 70 %}
-            High confidence in prediction. The model is fairly certain about this result.
+            High confidence in prediction.
         {% elif confidence >= 40 %}
-            Moderate confidence. Consider reviewing the job posting carefully.
+            Moderate confidence. Review the job carefully.
         {% elif confidence %}
-            Low confidence. The model is uncertain. Please verify through other means.
+            Low confidence. Model is uncertain.
         {% else %}
             Unable to calculate confidence score.
         {% endif %}
@@ -259,21 +162,9 @@
         <a href="/history" class="btn"> View History</a>
         <a href="/admin_login" class="btn">🔧 Admin Panel</a>
     </div>
-
-    <!-- Debug Information (Hidden by default) -->
-    <details style="margin-top: 1rem; opacity: 0.7; font-size: 0.8rem;">
-        <summary>Debug Info</summary>
-        <div style="text-align: left; background: rgba(0,0,0,0.3); padding: 0.5rem; border-radius: 0.5rem; margin-top: 0.5rem;">
-            <strong>Raw Values:</strong><br>
-            Label: "{{ label }}"<br>
-            Confidence: "{{ confidence }}"<br>
-            Description Length: {{ description|length if description else 0 }} characters
-        </div>
-    </details>
 </div>
 
 <script>
-  // Animate floating blobs subtly with mouse
   const blobs = document.querySelectorAll('.blob');
   document.addEventListener('mousemove', e => {
     const x = e.clientX / window.innerWidth;
@@ -284,27 +175,16 @@
     });
   });
 
-  // Animate confidence bar on load
   document.addEventListener('DOMContentLoaded', function() {
     const confidenceFill = document.querySelector('.confidence-fill');
     const currentWidth = confidenceFill.style.width;
     confidenceFill.style.width = '0%';
-    
-    setTimeout(() => {
-      confidenceFill.style.width = currentWidth;
-    }, 500);
+    setTimeout(() => { confidenceFill.style.width = currentWidth; }, 500);
   });
 
-  // Add some interactive effects
   const resultCard = document.querySelector('.result-card');
-  resultCard.addEventListener('mouseenter', () => {
-    resultCard.style.transform = 'scale(1.02)';
-    resultCard.style.transition = 'transform 0.3s ease';
-  });
-  
-  resultCard.addEventListener('mouseleave', () => {
-    resultCard.style.transform = 'scale(1)';
-  });
+  resultCard.addEventListener('mouseenter', () => { resultCard.style.transform = 'scale(1.02)'; resultCard.style.transition = 'transform 0.3s ease'; });
+  resultCard.addEventListener('mouseleave', () => { resultCard.style.transform = 'scale(1)'; });
 </script>
 
 </body>

@@ -112,13 +112,13 @@
 
     <h3 class="text-2xl font-semibold mb-4">Paste Job Description</h3>
 
-    <form action="/predict" method="POST" class="grid gap-5">
+    <form action="/analyze" method="POST" class="grid gap-5">
+
       <textarea class="w-full p-5 bg-black/20 border border-white/10 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-gray-200"
       placeholder="Paste the job posting text here..." name="job_description" required></textarea>
 
       <div class="flex gap-4 justify-between flex-wrap">
-        <button type="button" class="border px-5 py-3 rounded-lg hover:bg-white/10 transition">🎤 Voice Input</button>
-        <button type="button" class="border px-5 py-3 rounded-lg hover:bg-white/10 transition">📄 Load Sample</button>
+        
         <button type="button" class="border px-5 py-3 rounded-lg hover:bg-white/10 transition">🧹 Clear</button>
 
         <button type="submit" class="primary-btn px-10">Analyze</button>
