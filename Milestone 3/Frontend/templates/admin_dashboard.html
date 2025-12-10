@@ -9,7 +9,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Alpine.js for interactivity -->
+  <!-- Alpine.js -->
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
   <style>
@@ -18,9 +18,7 @@
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
-    .fade-in {
-      animation: fadeIn 0.8s ease-in-out;
-    }
+    .fade-in { animation: fadeIn 0.8s ease-in-out; }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
@@ -37,7 +35,6 @@
       <h1 class="text-3xl font-bold tracking-wide">Admin Dashboard</h1>
       <p class="text-slate-400 text-sm">Monitor detections & system performance</p>
     </div>
-
     <div class="flex items-center gap-4">
       <a href="/" class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700">Home</a>
       <a href="/admin_logout" class="px-4 py-2 rounded bg-red-600 hover:bg-red-700 shadow">Logout</a>
@@ -48,26 +45,18 @@
 
     <!-- ANALYTICS CARDS -->
     <section class="grid grid-cols-1 md:grid-cols-4 gap-6">
-
-      <!-- Total Results -->
       <div class="glass p-6 rounded-xl shadow-lg hover:scale-[1.02] transition">
         <h3 class="text-sm text-gray-400">Total Results Analyzed</h3>
         <p class="text-4xl font-bold mt-3 text-sky-400" id="total-results">0</p>
       </div>
-
-      <!-- FAKE Jobs -->
       <div class="glass p-6 rounded-xl shadow-lg hover:scale-[1.02] transition">
         <h3 class="text-sm text-gray-400">Fake Jobs</h3>
         <p class="text-4xl font-bold mt-3 text-red-500" id="fake-count">0</p>
       </div>
-
-      <!-- REAL Jobs -->
       <div class="glass p-6 rounded-xl shadow-lg hover:scale-[1.02] transition">
         <h3 class="text-sm text-gray-400">Real Jobs</h3>
         <p class="text-4xl font-bold mt-3 text-green-500" id="real-count">0</p>
       </div>
-
-      <!-- MongoDB Status -->
       <div class="glass p-6 rounded-xl shadow-lg hover:scale-[1.02] transition">
         <h3 class="text-sm text-gray-400">Database Status</h3>
         <div class="flex items-center gap-2 mt-3">
@@ -75,31 +64,34 @@
           <p class="text-xl font-semibold" id="db-text">Connected</p>
         </div>
       </div>
+    </section>
 
+    <!-- RETRAIN MODEL FORM -->
+    <section class="glass p-6 rounded-xl shadow-lg">
+      <h2 class="text-2xl font-semibold mb-4">Retrain Model</h2>
+      <form method="POST" action="/admin/retrain" enctype="multipart/form-data">
+        <input type="file" name="dataset" accept=".csv" class="mb-4 block text-gray-300"/>
+        <button type="submit" class="px-6 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 font-semibold text-white shadow-lg active:scale-95 transition">
+          Retrain Model
+        </button>
+      </form>
     </section>
 
     <!-- CHARTS -->
     <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-      <!-- Verdict Pie Chart -->
       <div class="glass p-6 rounded-xl shadow-lg">
         <h3 class="text-xl font-semibold mb-4">FAKE vs REAL Jobs</h3>
         <canvas id="verdictChart"></canvas>
       </div>
-
-      <!-- Results Over Time -->
       <div class="glass p-6 rounded-xl shadow-lg">
         <h3 class="text-xl font-semibold mb-4">Results Over Time</h3>
         <canvas id="resultsTimeChart"></canvas>
       </div>
-
     </section>
 
     <!-- RECENT DETECTIONS TABLE -->
     <section class="glass p-6 rounded-xl shadow-xl">
-
       <h2 class="text-2xl font-semibold mb-6">Recent Detection Results</h2>
-
       <div class="table-scroll overflow-x-auto rounded-lg border border-slate-700">
         <table class="w-full text-left text-sm">
           <thead class="bg-slate-800 text-slate-300 text-xs uppercase tracking-wide sticky top-0">
@@ -142,11 +134,8 @@
 
   </main>
 
-  <!-- SCRIPT -->
   <script>
-    // Pass data from Flask to JS
     const results = {{ results|tojson }};
-
     const totalResults = results.length;
     const fakeCount = results.filter(r => r.verdict === 'FAKE').length;
     const realCount = results.filter(r => r.verdict === 'REAL').length;
@@ -155,48 +144,20 @@
     document.getElementById('fake-count').textContent = fakeCount;
     document.getElementById('real-count').textContent = realCount;
 
-    // Verdict Pie Chart
     const verdictCtx = document.getElementById('verdictChart').getContext('2d');
     new Chart(verdictCtx, {
       type: 'pie',
-      data: {
-        labels: ['FAKE', 'REAL'],
-        datasets: [{
-          data: [fakeCount, realCount],
-          backgroundColor: ['#ef4444', '#22c55e'],
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { position: 'bottom', labels: { color: '#cbd5e1' } } }
-      }
+      data: { labels: ['FAKE','REAL'], datasets: [{ data: [fakeCount,realCount], backgroundColor:['#ef4444','#22c55e'], borderWidth:1 }] },
+      options: { responsive:true, plugins:{ legend:{ position:'bottom', labels:{ color:'#cbd5e1' } } } }
     });
 
-    // Results Over Time
     const resultsTimeCtx = document.getElementById('resultsTimeChart').getContext('2d');
     new Chart(resultsTimeCtx, {
       type: 'line',
-      data: {
-        labels: results.map(r => r.created_at),
-        datasets: [{
-          label: 'Score',
-          data: results.map(r => r.score),
-          fill: false,
-          borderColor: '#ef4444',
-          tension: 0.3,
-          pointBackgroundColor: '#ef4444'
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { labels: { color: '#cbd5e1' } } },
-        scales: {
-          x: { ticks: { color: '#cbd5e1' } },
-          y: { ticks: { color: '#cbd5e1' }, beginAtZero: true }
-        }
-      }
+      data: { labels: results.map(r=>r.created_at), datasets:[{ label:'Score', data:results.map(r=>r.score), fill:false, borderColor:'#ef4444', tension:0.3, pointBackgroundColor:'#ef4444' }] },
+      options: { responsive:true, plugins:{ legend:{ labels:{ color:'#cbd5e1' } } }, scales:{ x:{ ticks:{ color:'#cbd5e1' } }, y:{ ticks:{ color:'#cbd5e1' }, beginAtZero:true } } }
     });
   </script>
+
 </body>
 </html>

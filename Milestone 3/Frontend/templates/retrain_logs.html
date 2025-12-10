@@ -1,286 +1,214 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" class="h-full bg-slate-900">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Training Logs - Fake Job Detector</title>
+  <title>Admin Dashboard — Fake Job Detector</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      color: white;
-    }
+    html, body { height: 100%; margin:0; font-family:'Inter',sans-serif; color:white; }
+    .blob { position: fixed; border-radius:50%; opacity:0.35; filter:blur(100px); animation: float 25s infinite alternate ease-in-out, morph 40s infinite alternate ease-in-out; z-index:0; pointer-events:none;}
+    .blob1 { width:500px;height:500px;background:linear-gradient(45deg,#a78bfa,#7c3aed);top:-150px;left:-150px;}
+    .blob2 { width:400px;height:400px;background:linear-gradient(45deg,#60a5fa,#2563eb);top:200px;left:60%;}
+    .blob3 { width:550px;height:550px;background:linear-gradient(45deg,#14b8a6,#0d9488);top:60%;left:40%;}
+    @keyframes float{0%{transform:translate3d(0,0,0) scale(1);}50%{transform:translate3d(50px,-30px,0) scale(1.1);}100%{transform:translate3d(-30px,60px,0) scale(0.95);}}
+    @keyframes morph{0%{border-radius:40% 60% 60% 40% / 55% 40% 60% 45%;}50%{border-radius:55% 45% 50% 50% / 45% 60% 40% 55%;}100%{border-radius:40% 60% 60% 40% / 55% 40% 60% 45%;}}
 
-    .blob {
-      position: fixed;
-      border-radius: 50%;
-      opacity: 0.35;
-      filter: blur(100px);
-      animation: float 25s infinite alternate ease-in-out, morph 40s infinite alternate ease-in-out;
-      z-index: 0;
-      pointer-events: none;
-    }
+    .glass { background: rgba(30,41,59,0.6); backdrop-filter: blur(20px); border:1px solid rgba(255,255,255,0.1); border-radius: 2rem; box-shadow:0 8px 32px rgba(0,0,0,0.4);}
+    .fade-in { animation: fadeIn 0.8s ease-in-out;}
+    @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+    .table-scroll { max-height:400px; overflow-y:auto; }
 
-    .blob1 { width: 500px; height: 500px; background: linear-gradient(45deg, #a78bfa, #7c3aed); top: -150px; left: -150px; animation-delay: 0s; }
-    .blob2 { width: 400px; height: 400px; background: linear-gradient(45deg, #60a5fa, #2563eb); top: 200px; left: 60%; animation-delay: 3s; }
-    .blob3 { width: 550px; height: 550px; background: linear-gradient(45deg, #14b8a6, #0d9488); top: 60%; left: 40%; animation-delay: 6s; }
-
-    @keyframes float {
-      0% { transform: translate3d(0,0,0) scale(1); }
-      50% { transform: translate3d(50px,-30px,0) scale(1.1); }
-      100% { transform: translate3d(-30px,60px,0) scale(0.95); }
-    }
-
-    @keyframes morph {
-      0% { border-radius: 40% 60% 60% 40% / 55% 40% 60% 45%; }
-      50% { border-radius: 55% 45% 50% 50% / 45% 60% 40% 55%; }
-      100% { border-radius: 40% 60% 60% 40% / 55% 40% 60% 45%; }
-    }
-
-    .glass {
-      background: rgba(30, 41, 59, 0.6);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 2rem;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    }
-
-    .nav-scrolled {
-      background: rgba(15, 23, 42, 0.95);
-      backdrop-filter: blur(20px);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    th, td {
-      padding: 1rem;
-      text-align: left;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-    th {
-      background: rgba(30,41,59,0.8);
-      backdrop-filter: blur(10px);
-      position: sticky;
-      top: 0;
-      font-weight: 600;
-    }
-
-    .accuracy-badge {
-      padding: 0.25rem 0.75rem;
-      border-radius: 9999px;
-      font-size: 0.875rem;
-      font-weight: 600;
-    }
-    .accuracy-high { background: rgba(34, 197, 94, 0.2); color: #86efac; }
-    .accuracy-medium { background: rgba(245, 158, 11, 0.2); color: #fdba74; }
-    .accuracy-low { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+    .accuracy-badge { padding:0.25rem 0.75rem; border-radius:9999px; font-size:0.875rem; font-weight:600;}
+    .accuracy-high { background: rgba(34,197,94,0.2); color:#86efac;}
+    .accuracy-medium { background: rgba(245,158,11,0.2); color:#fdba74;}
+    .accuracy-low { background: rgba(239,68,68,0.2); color:#fca5a5;}
   </style>
 </head>
-<body class="h-full relative overflow-hidden">
 
+<body class="h-full relative overflow-hidden fade-in">
+
+  <!-- Floating blobs -->
   <div class="blob blob1"></div>
   <div class="blob blob2"></div>
   <div class="blob blob3"></div>
 
+  <!-- NAV -->
   <nav id="mainNav" class="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-slate-900/60 border-b border-white/10 shadow-lg transition-all duration-300">
     <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
       <div class="flex items-center gap-3 cursor-default select-none">
         <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-2xl drop-shadow-lg">🕵️</div>
-        <span class="text-xl font-extrabold tracking-wide text-white">Fake Job Detector</span>
+        <span class="text-xl font-extrabold tracking-wide text-white">Admin Dashboard</span>
       </div>
       <div class="flex gap-3 items-center">
-        <a href="/admin_dashboard" class="px-4 py-2 text-sm font-semibold rounded-lg text-gray-300 hover:text-white hover:bg-white/10 active:scale-95 transition">← Dashboard</a>
-        <a href="/logout" class="px-4 py-2 text-sm font-semibold rounded-lg bg-red-600 hover:bg-red-700 text-white active:scale-95 transition">Logout</a>
+        <a href="/" class="px-4 py-2 text-sm font-semibold rounded-lg text-gray-300 hover:text-white hover:bg-white/10 active:scale-95 transition">Home</a>
+        <a href="/admin_logout" class="px-4 py-2 text-sm font-semibold rounded-lg bg-red-600 hover:bg-red-700 text-white active:scale-95 transition">Logout</a>
       </div>
     </div>
   </nav>
 
-  <div class="pt-24 pb-12 max-w-7xl mx-auto px-6 relative z-10">
-    
-    <div class="mb-8">
-      <h1 class="text-4xl lg:text-5xl font-extrabold mb-4">
-        Model <span class="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">Training Logs</span>
-      </h1>
-      <p class="text-gray-300 text-lg">
-        Track all model retraining events, accuracy metrics, and training sources.
-      </p>
-    </div>
+  <main class="max-w-7xl mx-auto p-6 pt-28 space-y-8 relative z-10">
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      <div class="glass p-6">
-        <div class="text-2xl font-bold text-white mb-2">{{ logs|length }}</div>
-        <p class="text-gray-300 text-sm">Total Retraining Events</p>
+    <!-- JOB ANALYTICS CARDS -->
+    <section class="grid grid-cols-1 md:grid-cols-4 gap-6">
+
+      <div class="glass p-6 rounded-xl shadow-lg hover:scale-[1.02] transition">
+        <h3 class="text-sm text-gray-300">Total Results</h3>
+        <p class="text-4xl font-bold mt-3 text-sky-400" id="total-results">0</p>
       </div>
-      <div class="glass p-6">
-        <div class="text-2xl font-bold text-green-400 mb-2">
-          {% if logs %}
-            {{ logs[0][1] }}%
-          {% else %}
-            N/A
-          {% endif %}
+      <div class="glass p-6 rounded-xl shadow-lg hover:scale-[1.02] transition">
+        <h3 class="text-sm text-gray-300">Fake Jobs</h3>
+        <p class="text-4xl font-bold mt-3 text-red-500" id="fake-count">0</p>
+      </div>
+      <div class="glass p-6 rounded-xl shadow-lg hover:scale-[1.02] transition">
+        <h3 class="text-sm text-gray-300">Real Jobs</h3>
+        <p class="text-4xl font-bold mt-3 text-green-500" id="real-count">0</p>
+      </div>
+      <div class="glass p-6 rounded-xl shadow-lg hover:scale-[1.02] transition">
+        <h3 class="text-sm text-gray-300">Database Status</h3>
+        <div class="flex items-center gap-2 mt-3">
+          <div class="w-3 h-3 rounded-full bg-green-400" id="db-status"></div>
+          <p class="text-xl font-semibold" id="db-text">Connected</p>
         </div>
-        <p class="text-gray-300 text-sm">Latest Accuracy</p>
       </div>
-      <div class="glass p-6">
-        <div class="text-2xl font-bold text-blue-400 mb-2">
-          {% if logs %}
-            {{ logs[0][4] }}
-          {% else %}
-            N/A
-          {% endif %}
-        </div>
-        <p class="text-gray-300 text-sm">Last Retrained</p>
-      </div>
-    </div>
+    </section>
 
-    <div class="glass p-6 mb-8">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-white">Retraining History</h2>
-        <span class="px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-sm font-semibold">
-          {{ logs|length }} Events
-        </span>
+    <!-- JOB CHARTS -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="glass p-6 rounded-xl shadow-lg">
+        <h3 class="text-xl font-semibold mb-4">FAKE vs REAL Jobs</h3>
+        <canvas id="verdictChart"></canvas>
       </div>
+      <div class="glass p-6 rounded-xl shadow-lg">
+        <h3 class="text-xl font-semibold mb-4">Results Over Time</h3>
+        <canvas id="resultsTimeChart"></canvas>
+      </div>
+    </section>
 
-      <div class="overflow-x-auto rounded-2xl">
+    <!-- RECENT DETECTIONS -->
+    <section class="glass p-6 rounded-xl shadow-xl">
+      <h2 class="text-2xl font-semibold mb-6">Recent Detection Results</h2>
+      <div class="table-scroll overflow-x-auto rounded-lg border border-slate-700">
         <table>
-          <thead>
-            <tr class="text-left text-gray-300">
-              <th class="py-4 px-6">ID</th>
-              <th class="py-4 px-6">Date & Time</th>
-              <th class="py-4 px-6">Accuracy</th>
-              <th class="py-4 px-6">Training Source</th>
-              <th class="py-4 px-6">Model Size</th>
-              <th class="py-4 px-6">Status</th>
+          <thead class="bg-slate-800 text-slate-300 text-xs uppercase tracking-wide sticky top-0">
+            <tr>
+              <th>#</th>
+              <th>Job Description</th>
+              <th>Score</th>
+              <th>Verdict</th>
+              <th>Details</th>
+              <th>Created At</th>
+              <th>View</th>
             </tr>
           </thead>
           <tbody>
-            {% for log in logs %}
-            <tr class="hover:bg-white/5 transition">
-              <td class="py-4 px-6 text-gray-400">#{{ log[0] }}</td>
-              <td class="py-4 px-6 text-white">{{ log[4] }}</td>
-              <td class="py-4 px-6">
-                <div class="flex items-center gap-3">
-                  <span class="text-2xl font-bold {% if log[1] >= 90 %}text-green-400{% elif log[1] >= 80 %}text-yellow-400{% else %}text-red-400{% endif %}">
-                    {{ log[1] }}%
+            {% if results %}
+              {% for r in results %}
+              <tr class="border-b border-slate-800 hover:bg-slate-800/50 transition">
+                <td class="p-3 text-gray-400">{{ loop.index }}</td>
+                <td class="p-3 max-w-lg"><p class="truncate">{{ r.job_description }}</p></td>
+                <td class="p-3 font-semibold">{{ r.score }}</td>
+                <td class="p-3">
+                  <span class="px-3 py-1 rounded-full text-xs font-semibold {% if r.verdict=='FAKE' %}bg-red-600/80 text-white{% else %}bg-green-600/80 text-white{% endif %}">
+                    {{ r.verdict }}
                   </span>
-                  <div class="w-20 h-2 bg-gray-700 rounded-full overflow-hidden">
-                    <div class="h-full {% if log[1] >= 90 %}bg-green-500{% elif log[1] >= 80 %}bg-yellow-500{% else %}bg-red-500{% endif %}" 
-                         style="width: {{ log[1] }}%"></div>
-                  </div>
-                </div>
-              </td>
-              <td class="py-4 px-6">
-                <span class="px-3 py-1 rounded-full {% if 'default' in log[2].lower() %}bg-green-500/20 text-green-300{% else %}bg-yellow-500/20 text-yellow-300{% endif %} text-sm">
-                  {{ log[2] }}
-                </span>
-              </td>
-              <td class="py-4 px-6 text-gray-300">{{ log[3] }}</td>
-              <td class="py-4 px-6">
-                {% if log[1] >= 90 %}
-                <span class="accuracy-badge accuracy-high">Excellent</span>
-                {% elif log[1] >= 80 %}
-                <span class="accuracy-badge accuracy-medium">Good</span>
-                {% else %}
-                <span class="accuracy-badge accuracy-low">Needs Improvement</span>
-                {% endif %}
-              </td>
-            </tr>
+                </td>
+                <td class="p-3 text-gray-300">{{ r.details }}</td>
+                <td class="p-3 text-gray-400">{{ r.created_at }}</td>
+                <td class="p-3 text-sky-400"><a href="/admin/result/{{ r.id }}" class="hover:underline">Open</a></td>
+              </tr>
+              {% endfor %}
             {% else %}
-            <tr>
-              <td colspan="6" class="py-8 px-6 text-center text-gray-400">
-                No retraining logs found. Retrain the model to see logs here.
-              </td>
-            </tr>
-            {% endfor %}
+              <tr><td colspan="7" class="text-center p-4 text-gray-400">No results found.</td></tr>
+            {% endif %}
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
 
-    <div class="glass p-6">
-      <h3 class="text-xl font-bold text-white mb-4">Training Statistics</h3>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div>
-          <p class="text-gray-400 text-sm">Average Accuracy</p>
-          <p class="text-white font-bold text-lg">
-            {% if logs %}
-              {% set total_acc = logs|sum(attribute=1) %}
-              {% set count = logs|length %}
-              {{ (total_acc / count)|round(2) }}%
-            {% else %}
-              N/A
-            {% endif %}
-          </p>
-        </div>
-        <div>
-          <p class="text-gray-400 text-sm">Highest Accuracy</p>
-          <p class="text-white font-bold text-lg">
-            {% if logs %}
-              {% set highest = logs|max(attribute=1) %}
-              {{ highest[1] }}%
-            {% else %}
-              N/A
-            {% endif %}
-          </p>
-        </div>
-        <div>
-          <p class="text-gray-400 text-sm">Lowest Accuracy</p>
-          <p class="text-white font-bold text-lg">
-            {% if logs %}
-              {% set lowest = logs|min(attribute=1) %}
-              {{ lowest[1] }}%
-            {% else %}
-              N/A
-            {% endif %}
-          </p>
-        </div>
-        <div>
-          <p class="text-gray-400 text-sm">Default Dataset Uses</p>
-          <p class="text-white font-bold text-lg">
-            {% if logs %}
-              {% set default_count = 0 %}
+    <!-- TRAINING LOGS + RETRAIN MODEL -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="glass p-6">
+        <h2 class="text-2xl font-bold mb-4">Retrain Model</h2>
+        <p class="text-gray-300 mb-4">Click below to retrain the fake job detection model using the latest dataset.</p>
+        <form method="POST" action="/admin/retrain">
+          <button type="submit" class="px-6 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 font-semibold text-white shadow-lg active:scale-95 transition">Retrain Model</button>
+        </form>
+      </div>
+      <div class="glass p-6">
+        <h2 class="text-2xl font-bold mb-4">Training Logs</h2>
+        <div class="overflow-x-auto rounded-2xl max-h-96 overflow-y-auto">
+          <table>
+            <thead>
+              <tr class="text-left text-gray-300">
+                <th>ID</th>
+                <th>Date & Time</th>
+                <th>Accuracy</th>
+                <th>Training Source</th>
+                <th>Model Size</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
               {% for log in logs %}
-                {% if 'default' in log[2].lower() %}
-                  {% set default_count = default_count + 1 %}
-                {% endif %}
+              <tr class="hover:bg-white/5 transition">
+                <td class="py-2 px-4 text-gray-400">#{{ log[0] }}</td>
+                <td class="py-2 px-4">{{ log[4] }}</td>
+                <td class="py-2 px-4">
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold {% if log[1]>=90 %}text-green-400{% elif log[1]>=80 %}text-yellow-400{% else %}text-red-400{% endif %}">{{ log[1] }}%</span>
+                    <div class="w-16 h-2 bg-gray-700 rounded-full overflow-hidden">
+                      <div class="h-full {% if log[1]>=90 %}bg-green-500{% elif log[1]>=80 %}bg-yellow-500{% else %}bg-red-500{% endif %}" style="width: {{ log[1] }}%"></div>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-2 px-4">{{ log[2] }}</td>
+                <td class="py-2 px-4">{{ log[3] }}</td>
+                <td class="py-2 px-4">
+                  {% if log[1]>=90 %}<span class="accuracy-badge accuracy-high">Excellent</span>
+                  {% elif log[1]>=80 %}<span class="accuracy-badge accuracy-medium">Good</span>
+                  {% else %}<span class="accuracy-badge accuracy-low">Needs Improvement</span>{% endif %}
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="6" class="py-6 text-center text-gray-400">No retraining logs found.</td></tr>
               {% endfor %}
-              {{ default_count }}
-            {% else %}
-              0
-            {% endif %}
-          </p>
+            </tbody>
+          </table>
         </div>
       </div>
-    </div>
-  </div>
+    </section>
+
+  </main>
 
   <script>
-    const mainNav = document.getElementById('mainNav');
-    
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 50) {
-        mainNav.classList.add('nav-scrolled');
-      } else {
-        mainNav.classList.remove('nav-scrolled');
-      }
-    });
-
     const blobs = document.querySelectorAll('.blob');
     document.addEventListener('mousemove', e => {
       const x = e.clientX / window.innerWidth;
       const y = e.clientY / window.innerHeight;
-      blobs.forEach((blob, i) => {
-        const offset = (i + 1) * 10;
-        blob.style.transform = `translate(${x*offset - offset/2}px, ${y*offset - offset/2}px)`;
-      });
+      blobs.forEach((blob,i)=>{const offset=(i+1)*10; blob.style.transform=`translate(${x*offset-offset/2}px,${y*offset-offset/2}px)`;});
     });
-  </script>
+    const mainNav=document.getElementById('mainNav');
+    window.addEventListener('scroll',()=>{window.scrollY>50?mainNav.classList.add('nav-scrolled'):mainNav.classList.remove('nav-scrolled');});
+    
+    // Charts
+    const results = {{ results|tojson }};
+    const totalResults = results.length;
+    const fakeCount = results.filter(r=>r.verdict=='FAKE').length;
+    const realCount = results.filter(r=>r.verdict=='REAL').length;
 
+    document.getElementById('total-results').textContent=totalResults;
+    document.getElementById('fake-count').textContent=fakeCount;
+    document.getElementById('real-count').textContent=realCount;
+
+    const verdictCtx=document.getElementById('verdictChart').getContext('2d');
+    new Chart(verdictCtx,{type:'pie',data:{labels:['FAKE','REAL'],datasets:[{data:[fakeCount,realCount],backgroundColor:['#ef4444','#22c55e'],borderWidth:1}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{color:'#cbd5e1'}}}}});
+
+    const resultsTimeCtx=document.getElementById('resultsTimeChart').getContext('2d');
+    new Chart(resultsTimeCtx,{type:'line',data:{labels:results.map(r=>r.created_at),datasets:[{label:'Score',data:results.map(r=>r.score),fill:false,borderColor:'#ef4444',tension:0.3,pointBackgroundColor:'#ef4444'}]},options:{responsive:true,plugins:{legend:{labels:{color:'#cbd5e1'}}},scales:{x:{ticks:{color:'#cbd5e1'}},y:{ticks:{color:'#cbd5e1'},beginAtZero:true}}}});
+  </script>
 </body>
 </html>
