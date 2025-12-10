@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" x-data="{ darkMode: true }">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,9 +7,17 @@
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Alpine.js for interactivity -->
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
   <style>
-    /* Smooth Fade Animations */
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
     .fade-in {
       animation: fadeIn 0.8s ease-in-out;
     }
@@ -17,87 +25,84 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-
-    /* Glass Morphism */
-    .glass {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
+    .table-scroll { max-height: 400px; overflow-y: auto; }
   </style>
 </head>
 
 <body class="min-h-screen bg-gradient-to-br from-slate-900 to-black text-slate-100 fade-in">
 
   <!-- HEADER -->
-  <header class="glass p-5 flex justify-between items-center shadow-lg">
+  <header class="glass p-5 flex justify-between items-center shadow-lg fixed w-full z-10 top-0">
     <div>
       <h1 class="text-3xl font-bold tracking-wide">Admin Dashboard</h1>
-      <p class="text-slate-400 text-sm">Monitor detections, logs & system performance</p>
+      <p class="text-slate-400 text-sm">Monitor detections & system performance</p>
     </div>
 
     <div class="flex items-center gap-4">
       <a href="/" class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700">Home</a>
-
-      <a href="/admin_logout" class="px-4 py-2 rounded bg-red-600 hover:bg-red-700 shadow">
-        Logout
-      </a>
+      <a href="/admin_logout" class="px-4 py-2 rounded bg-red-600 hover:bg-red-700 shadow">Logout</a>
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto p-6 space-y-8">
+  <main class="max-w-7xl mx-auto p-6 pt-28 space-y-8">
 
     <!-- ANALYTICS CARDS -->
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      
+    <section class="grid grid-cols-1 md:grid-cols-4 gap-6">
+
       <!-- Total Results -->
-      <div class="glass p-6 rounded-xl shadow-lg hover:scale-[1.01] transition">
+      <div class="glass p-6 rounded-xl shadow-lg hover:scale-[1.02] transition">
         <h3 class="text-sm text-gray-400">Total Results Analyzed</h3>
-        <p class="text-5xl font-semibold mt-3 text-sky-400">{{ results|length }}</p>
-        <p class="text-gray-500 mt-2 text-xs">Stored in MongoDB</p>
+        <p class="text-4xl font-bold mt-3 text-sky-400" id="total-results">0</p>
+      </div>
+
+      <!-- FAKE Jobs -->
+      <div class="glass p-6 rounded-xl shadow-lg hover:scale-[1.02] transition">
+        <h3 class="text-sm text-gray-400">Fake Jobs</h3>
+        <p class="text-4xl font-bold mt-3 text-red-500" id="fake-count">0</p>
+      </div>
+
+      <!-- REAL Jobs -->
+      <div class="glass p-6 rounded-xl shadow-lg hover:scale-[1.02] transition">
+        <h3 class="text-sm text-gray-400">Real Jobs</h3>
+        <p class="text-4xl font-bold mt-3 text-green-500" id="real-count">0</p>
       </div>
 
       <!-- MongoDB Status -->
-      <div class="glass p-6 rounded-xl shadow-lg hover:scale-[1.01] transition">
-        <h3 class="text-sm text-gray-400">MongoDB Status</h3>
-
+      <div class="glass p-6 rounded-xl shadow-lg hover:scale-[1.02] transition">
+        <h3 class="text-sm text-gray-400">Database Status</h3>
         <div class="flex items-center gap-2 mt-3">
-          <div class="w-3 h-3 rounded-full 
-            {% if results|length > 0 %} bg-green-400 {% else %} bg-yellow-400 {% endif %}">
-          </div>
-
-          <p class="text-xl font-semibold">
-            {% if results|length > 0 %}
-              Connected
-            {% else %}
-              Connected (no data)
-            {% endif %}
-          </p>
+          <div class="w-3 h-3 rounded-full bg-green-400" id="db-status"></div>
+          <p class="text-xl font-semibold" id="db-text">Connected</p>
         </div>
-
-        <p class="text-gray-500 mt-2 text-xs">Database engine health</p>
-      </div>
-
-      <!-- Recent Status -->
-      <div class="glass p-6 rounded-xl shadow-lg hover:scale-[1.01] transition">
-        <h3 class="text-sm text-gray-400">Dashboard Overview</h3>
-        <p class="text-xl font-semibold mt-3">
-          Real-time monitoring enabled
-        </p>
-        <p class="text-gray-500 mt-2 text-xs">Updated automatically</p>
       </div>
 
     </section>
 
-    <!-- TABLE WRAPPER -->
+    <!-- CHARTS -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- Verdict Pie Chart -->
+      <div class="glass p-6 rounded-xl shadow-lg">
+        <h3 class="text-xl font-semibold mb-4">FAKE vs REAL Jobs</h3>
+        <canvas id="verdictChart"></canvas>
+      </div>
+
+      <!-- Results Over Time -->
+      <div class="glass p-6 rounded-xl shadow-lg">
+        <h3 class="text-xl font-semibold mb-4">Results Over Time</h3>
+        <canvas id="resultsTimeChart"></canvas>
+      </div>
+
+    </section>
+
+    <!-- RECENT DETECTIONS TABLE -->
     <section class="glass p-6 rounded-xl shadow-xl">
 
       <h2 class="text-2xl font-semibold mb-6">Recent Detection Results</h2>
 
-      <div class="overflow-auto rounded-lg border border-slate-700">
-
+      <div class="table-scroll overflow-x-auto rounded-lg border border-slate-700">
         <table class="w-full text-left text-sm">
-          <thead class="bg-slate-800 text-slate-300 text-xs uppercase tracking-wide">
+          <thead class="bg-slate-800 text-slate-300 text-xs uppercase tracking-wide sticky top-0">
             <tr>
               <th class="p-3">#</th>
               <th class="p-3">Job Description</th>
@@ -108,58 +113,90 @@
               <th class="p-3">View</th>
             </tr>
           </thead>
-
           <tbody>
-
-            {% for r in results %}
-            <tr class="border-b border-slate-800 hover:bg-slate-800/50 transition">
-
-              <td class="p-3 align-top text-gray-400">{{ loop.index }}</td>
-
-              <td class="p-3 max-w-lg">
-                <p class="truncate">{{ r.job_description }}</p>
-              </td>
-
-              <td class="p-3 font-semibold">{{ r.score }}</td>
-
-              <td class="p-3">
-                <span class="px-3 py-1 rounded-full text-xs font-semibold
-                  {% if r.verdict == 'FAKE' %}
-                    bg-red-600/80 text-white
-                  {% else %}
-                    bg-green-600/80 text-white
-                  {% endif %}
-                ">
-                  {{ r.verdict }}
-                </span>
-              </td>
-
-              <td class="p-3 text-gray-300">{{ r.details }}</td>
-
-              <td class="p-3 text-gray-400">
-                {{ r.created_at_str if r.created_at_str else r.created_at }}
-              </td>
-
-              <td class="p-3 text-sky-400">
-                <a href="/admin/result/{{ r._id }}" class="hover:underline">Open</a>
-              </td>
-            </tr>
-
+            {% if results %}
+              {% for r in results %}
+              <tr class="border-b border-slate-800 hover:bg-slate-800/50 transition">
+                <td class="p-3 align-top text-gray-400">{{ loop.index }}</td>
+                <td class="p-3 max-w-lg"><p class="truncate">{{ r.job_description }}</p></td>
+                <td class="p-3 font-semibold">{{ r.score }}</td>
+                <td class="p-3">
+                  <span class="px-3 py-1 rounded-full text-xs font-semibold {% if r.verdict=='FAKE' %}bg-red-600/80 text-white{% else %}bg-green-600/80 text-white{% endif %}">
+                    {{ r.verdict }}
+                  </span>
+                </td>
+                <td class="p-3 text-gray-300">{{ r.details }}</td>
+                <td class="p-3 text-gray-400">{{ r.created_at }}</td>
+                <td class="p-3 text-sky-400"><a href="/admin/result/{{ r.id }}" class="hover:underline">Open</a></td>
+              </tr>
+              {% endfor %}
             {% else %}
-            <tr>
-              <td colspan="7" class="text-center p-4 text-gray-400">
-                No results found.
-              </td>
-            </tr>
-            {% endfor %}
+              <tr>
+                <td colspan="7" class="text-center p-4 text-gray-400">No results found.</td>
+              </tr>
+            {% endif %}
           </tbody>
-
         </table>
-
       </div>
     </section>
 
   </main>
 
+  <!-- SCRIPT -->
+  <script>
+    // Pass data from Flask to JS
+    const results = {{ results|tojson }};
+
+    const totalResults = results.length;
+    const fakeCount = results.filter(r => r.verdict === 'FAKE').length;
+    const realCount = results.filter(r => r.verdict === 'REAL').length;
+
+    document.getElementById('total-results').textContent = totalResults;
+    document.getElementById('fake-count').textContent = fakeCount;
+    document.getElementById('real-count').textContent = realCount;
+
+    // Verdict Pie Chart
+    const verdictCtx = document.getElementById('verdictChart').getContext('2d');
+    new Chart(verdictCtx, {
+      type: 'pie',
+      data: {
+        labels: ['FAKE', 'REAL'],
+        datasets: [{
+          data: [fakeCount, realCount],
+          backgroundColor: ['#ef4444', '#22c55e'],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom', labels: { color: '#cbd5e1' } } }
+      }
+    });
+
+    // Results Over Time
+    const resultsTimeCtx = document.getElementById('resultsTimeChart').getContext('2d');
+    new Chart(resultsTimeCtx, {
+      type: 'line',
+      data: {
+        labels: results.map(r => r.created_at),
+        datasets: [{
+          label: 'Score',
+          data: results.map(r => r.score),
+          fill: false,
+          borderColor: '#ef4444',
+          tension: 0.3,
+          pointBackgroundColor: '#ef4444'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: '#cbd5e1' } } },
+        scales: {
+          x: { ticks: { color: '#cbd5e1' } },
+          y: { ticks: { color: '#cbd5e1' }, beginAtZero: true }
+        }
+      }
+    });
+  </script>
 </body>
 </html>

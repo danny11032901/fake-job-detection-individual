@@ -9,6 +9,7 @@ app.secret_key = "supersecretkey123"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "analysis.db")
 
+# ---------- Initialize Database ----------
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
@@ -26,6 +27,7 @@ def init_db():
 
 init_db()
 
+# ---------- Routes ----------
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -37,9 +39,8 @@ def analyze():
         return render_template("index.html", error="Job description cannot be empty")
 
     # Scoring logic
-    score = min(len(desc) % 100 + 10, 100)  # confidence 10-100
-    verdict = "Fake Job" if score > 50 else "Real Job"
-    confidence = score
+    score = min(len(desc) % 100 + 10, 100)
+    verdict = "FAKE" if score > 50 else "REAL"
     created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # Save to DB
@@ -52,12 +53,11 @@ def analyze():
     conn.commit()
     conn.close()
 
-    # Pass correct variable names to template
     return render_template(
         "result.html",
         job_description=desc,
         verdict=verdict,
-        confidence=confidence,
+        confidence=score,
         created_at=created_at
     )
 
@@ -88,7 +88,17 @@ def admin_dashboard():
     rows = c.fetchall()
     conn.close()
 
-    results = [{"id": r[0], "job_description": r[1], "score": r[2], "verdict": r[3], "created_at": r[4]} for r in rows]
+    # Convert rows to dicts
+    results = []
+    for r in rows:
+        results.append({
+            "id": r[0],
+            "job_description": r[1],
+            "score": r[2],
+            "verdict": r[3],
+            "created_at": r[4] or ""
+        })
+
     return render_template("admin_dashboard.html", results=results)
 
 @app.route("/history")
@@ -100,5 +110,6 @@ def history():
     conn.close()
     return render_template("history.html", records=rows)
 
+# ---------- Run ----------
 if __name__ == "__main__":
     app.run(debug=True)
